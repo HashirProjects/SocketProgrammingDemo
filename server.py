@@ -20,6 +20,7 @@ class serverConnection():
 		print("STARTING SERVER ...")
 		connected= True
 		while connected:
+			self.server.listen(1)
 			connection, clientAddress = self.server.accept()
 			clientThread= threading.Thread(target=clientActions.handleClient, args=[connection,clientAddress,self.scores])
 			clientThread.start()

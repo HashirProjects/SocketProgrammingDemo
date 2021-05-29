@@ -39,3 +39,6 @@ class clientConnection():
 
 		print(f"YOUR SCORE WAS {score}")
 		print(f"YOU ARE AT POSITION {position} IN THE LEADERBOARD")
+
+user=clientConnection("192.168.1.42", 5050)
+user.getLeaderboardPosition(1000)

@@ -1,4 +1,5 @@
 import socket
+import json
 
 def recvMsg(form, headerSize, connection):
 	msgLength= int(connection.recv(headerSize).decode(form)) #gets the next message passed to the socket
@@ -8,12 +9,11 @@ def recvMsg(form, headerSize, connection):
 
 def sendMsg(form, content, headerSize , connection):
 	msg=str(content).encode(form)
-	sendLength=len(msg)
-	sendLength+= ' '.encode(form) * (headerSize - sendLength)
+	sendLength=str(len(msg)).encode(form)
+	sendLength+= ' '.encode(form) * (headerSize - len(msg))
 
 	connection.send(sendLength) # sends the message to the socket
 	connection.send(msg)
-
 
 
 def handleClient(connection, address, scores):
@@ -23,12 +23,12 @@ def handleClient(connection, address, scores):
 
 	msg = recvMsg("utf-8", 64, connection)
 
-	scores[address]= int(msg)
+	scores[str(address)]= int(msg)
 	with open("scores.json", "w") as scoresFile:
 		json.dump(scores, scoresFile)
 
 	for i in range(len(scores)):
-		if address == sorted(scores.items(), key=lambda x: x[1])[i][0]: #returns a list of sorted tuples
+		if str(address) == sorted(scores.items(), key=lambda x: x[1])[i][0]: #returns a list of sorted tuples
 			sendMsg("utf-8", i+1, 64, connection)
 
 	connection.close()
