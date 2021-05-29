@@ -1,43 +1,46 @@
 import socket
 
-class clientInteraction():
-	
-	def handleClient(connection, address, scores):
-		#recieves the score from the client and returns the position in the leaderboard 
+def recvMsg(form, headerSize, connection):
+	msgLength= int(connection.recv(headerSize).decode(form)) #gets the next message passed to the socket
+	msg= connection.recv(msgLength).decode(form)
 
-		print(f"CLIENT CONNECTED: {address}")
+	return msg
 
-		msgLength= int(connection.recv(64).decode("utf-8")) #gets the next message passed to the socket
-		msg= connection.recv(msgLength).decode("utf-8")
+def sendMsg(form, content, headerSize , connection):
+	msg=str(content).encode(form)
+	sendLength=len(msg)
+	sendLength+= ' '.encode(form) * (headerSize - sendLength)
 
-		scores[address]= int(msg)
-		for i in range(len(scores)):
-
-			if address == sorted(scores.items(), key=lambda x: x[1], reverse=True)[i][0]: #returns a list of sorted tuples
-
-				returnMsg=str(i).encode("utf-8")
-				sendLength=len(returnMsg)
-				sendLength+= ' '.encode("utf-8") * (64 - sendLength)
-
-				connection.send(sendLength) # sends the message to the socket
-				connection.send(i)
-
-		connection.close()
-		print(f"CLIENT DISCONNECTED: {address}")
+	connection.send(sendLength) # sends the message to the socket
+	connection.send(msg)
 
 
-	def handleServer(client, score):
-		#sends the score to the server and receives and prints the position in the leaderboard.
 
-		Msg=str(score).encode("utf-8")
-		sendLength=len(returnMsg)
-		sendLength+= ' '.encode("utf-8") * (64 - sendLength)
+def handleClient(connection, address, scores):
+	#recieves the score from the client and returns the position in the leaderboard 
 
-		client.send(sendLength) # sends the message to the socket
-		client.send(i)
+	print(f"CLIENT CONNECTED: {address}")
 
-		msgLength= int(connection.recv(64).decode("utf-8")) #gets the next message passed to the socket
-		msg= connection.recv(msgLength).decode("utf-8")
+	msg = recvMsg("utf-8", 64, connection)
 
-		print(f"YOU ARE AT POSITION {msg} IN THE LEADERBOARD")
+	scores[address]= int(msg)
+	with open("scores.json", "w") as scoresFile:
+		json.dump(scores, scoresFile)
+
+	for i in range(len(scores)):
+		if address == sorted(scores.items(), key=lambda x: x[1])[i][0]: #returns a list of sorted tuples
+			sendMsg("utf-8", i+1, 64, connection)
+
+	connection.close()
+	print(f"CLIENT DISCONNECTED: {address}")
+
+
+def handleServer(client, score):
+	#sends the score to the server and receives and prints the position in the leaderboard.
+
+	sendMsg("utf-8", score, 64, client)
+
+	msg = recvMsg("utf-8", 64, client)
+
+	return msg
 

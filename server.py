@@ -1,6 +1,7 @@
 import socket
 import threading
-from clientActions import clientInteraction
+import clientActions
+import json
 
 class serverConnection():
 
@@ -10,15 +11,17 @@ class serverConnection():
 		self.server= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server.bind(self.address)
 
-		self.scores={}
+		scoresFile = open("scores.json")
+		self.scores=json.load(scoresFile)
 
 
 	def startServer(self):
 
 		print("STARTING SERVER ...")
-		while True:
+		connected= True
+		while connected:
 			connection, clientAddress = self.server.accept()
-			clientThread= threading.Thread(target=clientInteraction.handleClient, args=[connection,clientAddress,self.scores])
+			clientThread= threading.Thread(target=clientActions.handleClient, args=[connection,clientAddress,self.scores])
 			clientThread.start()
 
 server= serverConnection(socket.gethostbyname(socket.gethostname()),5050)
