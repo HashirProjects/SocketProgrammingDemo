@@ -9,8 +9,11 @@ def recvMsg(form, headerSize, connection):
 
 def sendMsg(form, content, headerSize , connection):
 	msg=str(content).encode(form)
+
 	sendLength=str(len(msg)).encode(form)
-	sendLength+= ' '.encode(form) * (headerSize - len(msg))
+	
+	while len(sendLength) < headerSize:
+		sendLength+= ' '.encode(form)
 
 	connection.send(sendLength) # sends the message to the socket
 	connection.send(msg)
